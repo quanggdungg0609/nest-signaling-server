@@ -1,0 +1,67 @@
+import { Body, Controller, Get, HttpStatus, Logger, NotFoundException, Param, ParseFilePipeBuilder,
+        Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {Response} from "express"
+
+import { CameraRegDto } from '../DTO';
+import { CameraService } from '../services/camera.service';
+import { CameraModifyDto } from '../DTO/camera_modify.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CameraGuard } from '../guards/camera.guard';
+
+@Controller('cameras')
+export class CameraController {
+    private logger = new Logger(CameraController.name);
+
+    constructor(
+        private readonly cameraService: CameraService
+    ){}
+
+    @Post("register")
+    register(@Body() dto: CameraRegDto){
+        // ! Use for camera register
+        return this.cameraService.register(dto);
+    }
+
+    @Put("modifyInfo")
+    @UseGuards(CameraGuard)
+    modifyInfo(@Body() dto: CameraModifyDto){
+        this.logger.debug(dto);
+        return {test:"test"}
+    }
+
+
+    @Post("upload-thumbnail")
+    @UseInterceptors(FileInterceptor("file"))
+    async uploadImage(  
+        @UploadedFile(
+            new ParseFilePipeBuilder()
+            .addFileTypeValidator({fileType:"image/jpeg"})
+            .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+    )
+    file,){
+        return this.cameraService.uploadImage(file)
+    }
+
+
+    @Post("upload-video")
+    @UseInterceptors(FileInterceptor("file"))
+    uploadVideo(file:Express.Multer.File){
+
+    }
+
+    @Get("get-thumbnail")
+    async getThumbnail(@Query('camera-uuid') cameraUuid: string, @Res() res: Response){
+        console.log(cameraUuid)
+        try{
+            const imgPath = await this.cameraService.getThumbnail(cameraUuid)
+            res.sendFile(imgPath)
+            return
+        }catch(error){
+            if(error instanceof NotFoundException){
+                throw new NotFoundException(error.message)
+            }
+            throw error
+        }
+        
+    }
+}

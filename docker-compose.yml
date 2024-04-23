@@ -1,0 +1,22 @@
+version:  '3.8'
+services:
+  dev-db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: lanestel29
+      MONGO_INITDB_DATABASE: lanestel_signaling
+      MONGO_REPLICA_HOST: localhost
+      MONGO_REPLICA_PORT: "27017"
+    networks:
+      - lanestel
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data: {}
+
+networks:
+  lanestel:
