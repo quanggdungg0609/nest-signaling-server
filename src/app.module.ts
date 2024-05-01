@@ -9,6 +9,7 @@ import { ConfigModule } from "@nestjs/config"
 
 
 
+
 @Module({
   imports: [
     // * config module for .env file
@@ -29,3 +30,4 @@ import { ConfigModule } from "@nestjs/config"
   ],
 })
 export class AppModule {}
+

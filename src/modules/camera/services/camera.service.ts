@@ -55,8 +55,7 @@ export class CameraService {
     // use for
     async uploadImage(file?: Express.Multer.File){
         try {
-            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'images');
-            console.log(uploadPath)
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail');
             await fs.ensureDir(uploadPath);
             // Verify if file existed
             const filePath = path.join(uploadPath, file.originalname);
@@ -74,15 +73,40 @@ export class CameraService {
             return { message: 'File uploaded successfully' };
         } catch (error) {
             // Xử lý lỗi nếu có
-            console.log(error)
+            console.log(error);
+            return { error: 'Error uploading file' };
+        }
+    }
+
+    async uploadVideo(cameraUuid: string, file?: Express.Multer.File){
+        try{
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid);
+            await fs.ensureDir(uploadPath);
+            // Verify if file existed
+            const filePath = path.join(uploadPath, file.originalname);
+            const fileExists = await fs.pathExists(filePath);
+
+            if (fileExists) {
+                // If file existed, overwrite
+                // await fs.copyFile(file.path, filePath, { overwrite: true });
+                await fs.remove(filePath); // Delete old file
+                await fs.move(file.path, filePath);
+            } else {
+                // Else, move the file into the directory
+                await fs.move(file.path, filePath);
+            }
+            return { message: 'File uploaded successfully' };
+
+        }catch(error){
+            console.log(error);
             return { error: 'Error uploading file' };
         }
     }
 
     async getThumbnail(imageName: string){
-        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', 'images', imageName+".jpeg")
+        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail', imageName+".jpeg")
         if (!fs.existsSync(imagePath)) {
-            throw new NotFoundException('Không tìm thấy hình ảnh');
+            throw new NotFoundException('Image not found');
         }
 
         return imagePath

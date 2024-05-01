@@ -26,7 +26,6 @@ export class CameraGuard implements CanActivate {
     const hash = argon.hash(apiKey,{
       salt: Buffer.from(salt, "utf-8")
     })
-    console.log(request.headers)
     return true;
   }
 }

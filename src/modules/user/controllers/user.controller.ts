@@ -6,7 +6,7 @@ import { JwtRefreshGuard } from '../modules/auth/guards/jwt_refresh/jwt_refresh.
 
 
 
-@Controller('users')
+@Controller('api/users')
 export class UserController {
 
 

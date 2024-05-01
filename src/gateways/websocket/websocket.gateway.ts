@@ -91,7 +91,6 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       this.logger.log("Undefined client disconnect")
     }else if (userUuid !== undefined || cameraUuid !== undefined){
       this.logger.log(`${userUuid? "User [" + userUuid +"]" : "Camera [" + cameraUuid+"]"} - has disconnected`)
-      console.log(userUuid ? this.users: this.cameras)
     }
   }
 
@@ -174,7 +173,6 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
         type: data.type,
         sdp: data.sdp
       }
-      console.log(payload.from)
       cameraSocket.send(JSON.stringify({
         event:"offer-sd",
         data:payload

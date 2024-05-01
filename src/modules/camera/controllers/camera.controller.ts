@@ -8,7 +8,7 @@ import { CameraModifyDto } from '../DTO/camera_modify.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CameraGuard } from '../guards/camera.guard';
 
-@Controller('cameras')
+@Controller('api/cameras')
 export class CameraController {
     private logger = new Logger(CameraController.name);
 
@@ -45,13 +45,20 @@ export class CameraController {
 
     @Post("upload-video")
     @UseInterceptors(FileInterceptor("file"))
-    uploadVideo(file:Express.Multer.File){
-
+    async uploadVideo(  
+        @UploadedFile(
+            new ParseFilePipeBuilder()
+            .addFileTypeValidator({fileType:"video/webm"})
+            .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+    )
+    file: Express.Multer.File, @Body('camera-uuid') cameraUuid: string){
+        console.log(file.mimetype)
+        return this.cameraService.uploadVideo(cameraUuid, file)
     }
+
 
     @Get("get-thumbnail")
     async getThumbnail(@Query('camera-uuid') cameraUuid: string, @Res() res: Response){
-        console.log(cameraUuid)
         try{
             const imgPath = await this.cameraService.getThumbnail(cameraUuid)
             res.sendFile(imgPath)
