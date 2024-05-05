@@ -8,7 +8,7 @@ import * as fs from 'fs-extra';
 import { CameraRegDto } from '../DTO';
 import { InjectModel } from '@nestjs/mongoose';
 import { Camera } from '../schemas/camera.schema';
-import { CameraModifyDto } from '../DTO/camera_modify.dto';
+import {  ConfigService } from '@nestjs/config';
 
 
 
@@ -19,30 +19,32 @@ export class CameraService {
 
     constructor(
         @InjectModel(Camera.name) private readonly cameraModel: Model<Camera>,
+        private config: ConfigService
     ){}
 
 
     async register(dto: CameraRegDto){
-        const { macAddr, name, location} = dto;
+        const { uuid, name, location} = dto;
         
         try{
             const found = await this.cameraModel.findOne({
-                macAddr: macAddr
+                uuid: uuid
             });
             if(found){
                 throw new HttpException("Camera existed", HttpStatus.CONFLICT);
             }
 
             const apiKey = this.createApiKey();
-            const hash = await argon.hash(apiKey);
+            const salt = this.config.get<string>("SALT_APIKEY")
+            const hash = await argon.hash(apiKey,{
+                salt: Buffer.from(salt,"utf-8")
+            });
             await this. cameraModel.create({
-                macAddr: macAddr,
+                uuid: uuid,
                 apiKey: hash,
                 name: name,
                 location: location
             });
-            let a = "aaaaaa"
-            a.split("")
             this.logger.log("New Camera added")
             return { apiKey: apiKey };
         }catch (exception){
@@ -52,8 +54,8 @@ export class CameraService {
     }
 
 
-    // use for
-    async uploadImage(file?: Express.Multer.File){
+    // use for upload video
+    async uploadThumnail(file?: Express.Multer.File){
         try {
             const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail');
             await fs.ensureDir(uploadPath);
@@ -108,9 +110,14 @@ export class CameraService {
         if (!fs.existsSync(imagePath)) {
             throw new NotFoundException('Image not found');
         }
-
         return imagePath
     }
+
+    async verifyApiKey(){
+        
+    }
+
+
     private createApiKey(): string{
         const apiKey = generateApiKey({method: "string", min: 8, max: 20}).toString();
         return apiKey;

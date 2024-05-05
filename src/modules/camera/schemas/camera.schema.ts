@@ -9,7 +9,7 @@ export type CameraDocument = HydratedDocument<Camera>;
 @Schema({timestamps: true, collection: "cameras"})
 export class Camera{
     @Prop({required: true})
-    macAddr: string;
+    uuid: string;
 
     @Prop({required: true})
     apiKey: string;

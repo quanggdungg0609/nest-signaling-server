@@ -18,7 +18,7 @@ export class CameraController {
 
     @Post("register")
     register(@Body() dto: CameraRegDto){
-        // ! Use for camera register
+        console.log(dto)
         return this.cameraService.register(dto);
     }
 
@@ -39,7 +39,7 @@ export class CameraController {
             .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file,){
-        return this.cameraService.uploadImage(file)
+        return this.cameraService.uploadThumnail(file)
     }
 
 
@@ -56,6 +56,10 @@ export class CameraController {
         return this.cameraService.uploadVideo(cameraUuid, file)
     }
 
+    @Get("verify-apikey")
+    async verifyApiKey(){
+        
+    }
 
     @Get("get-thumbnail")
     async getThumbnail(@Query('camera-uuid') cameraUuid: string, @Res() res: Response){

@@ -1,11 +1,11 @@
-import { IsMACAddress, IsNotEmpty, IsString } from "class-validator"
+import { IsMACAddress, IsNotEmpty, IsString, IsUUID } from "class-validator"
 
 
 
 export class CameraRegDto{
     @IsNotEmpty()
-    @IsMACAddress()
-    macAddr: string
+    @IsUUID()
+    uuid: string
 
     @IsNotEmpty()
     @IsString()
