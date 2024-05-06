@@ -4,7 +4,10 @@ import { SignInDto, SignUpDto, RefreshDto } from '../DTO';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from "express"
 import { JwtRefreshGuard } from '../guards/jwt_refresh/jwt_refresh.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags('User Authentication APIs')
 @Controller('api/auth')
 export class AuthController {
     private readonly logger = new Logger(AuthController.name)

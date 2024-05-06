@@ -2,7 +2,6 @@ version:  '3.8'
 services:
   nestjs-app:
     container_name: nestjs-app
-    
     build: 
       context: .
       dockerfile: Dockerfile
@@ -10,7 +9,7 @@ services:
       - "3000:3000"
       - "3030:3030"
     volumes:
-      - .:/usr/src/app
+      - ./src:/usr/src/app/src
       # - ./temp:/usr/src/app/temp
     depends_on:
       - dev-db

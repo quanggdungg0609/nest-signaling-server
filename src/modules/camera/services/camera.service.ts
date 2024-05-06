@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as ffmpeg from "fluent-ffmpeg";
 
-import { CameraRegDto } from '../DTO';
+import { CameraRegDto, UploadThumbnailDto } from '../DTO';
 import { InjectModel } from '@nestjs/mongoose';
 import { Camera } from '../schemas/camera.schema';
 import {  ConfigService } from '@nestjs/config';
@@ -54,11 +54,33 @@ export class CameraService {
         }
     }
 
-
-    // use for upload video
-    async uploadThumnail(file?: Express.Multer.File){
-        try {
+    async uploadThumbnail(dto: UploadThumbnailDto){
+        try{
             const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail');
+            await fs.ensureDir(uploadPath);
+            // Verify if file existed
+            const filePath = path.join(uploadPath, dto.file.originalname);
+            const fileExists = await fs.pathExists(filePath);
+            if (fileExists) {
+                // If file existed, overwrite
+                // await fs.copyFile(file.path, filePath, { overwrite: true });
+                await fs.remove(filePath); // Delete old file
+                await fs.move(dto.file.path, filePath);
+            } else {
+                // Else, move the file into the directory
+                await fs.move(dto.file.path, filePath);
+            }
+            this.logger.log(`Thumbnail image ${dto.file.originalname} uploaded`)
+            return { message: 'File uploaded successfully' };
+        }catch(exception){
+            console.log(exception)
+            return new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async uploadImage(file: Express.Multer.File, cameraUuid: string){
+        try {
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'images', cameraUuid);
             await fs.ensureDir(uploadPath);
             // Verify if file existed
             const filePath = path.join(uploadPath, file.originalname);
@@ -73,22 +95,24 @@ export class CameraService {
                 // Else, move the file into the directory
                 await fs.move(file.path, filePath);
             }
+
+            this.logger.log(`Image ${file.originalname} uploaded`)
             return { message: 'File uploaded successfully' };
         } catch (error) {
-            // Xử lý lỗi nếu có
             console.log(error);
             return { error: 'Error uploading file' };
         }
     }
 
-    async uploadVideo(cameraUuid: string, file?: Express.Multer.File){
+    // use for upload video
+    async uploadVideo(cameraUuid: string, file: Express.Multer.File){
         try{
             const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid, file.originalname.split(".")[0]);
             await fs.ensureDir(uploadPath);
             // Verify if file existed
+            //
             const filePath = path.join(uploadPath, file.originalname);
             const fileExists = await fs.pathExists(filePath);
-            console.log(filePath)
             if (fileExists) {
                 // If file existed, overwrite
                 // await fs.copyFile(file.path, filePath, { overwrite: true });
@@ -99,7 +123,6 @@ export class CameraService {
                 await fs.move(file.path, filePath);
             }
             this.logger.log(`video ${file.originalname} uploaded`)
-
             ffmpeg()
                 .input(filePath)
                 .screenshots({ 
@@ -108,7 +131,7 @@ export class CameraService {
                     folder: uploadPath,
                 },)
                 .on("end",()=>{
-                    this.logger.log("Get thumnail from video done")
+                    this.logger.log("Get thumbnail from video done")
                 })
             return { message: 'File uploaded successfully' };
 
@@ -126,8 +149,18 @@ export class CameraService {
         return imagePath
     }
 
+
+    async getThumbnailVideo(cameraUuid:string, imageName:string){
+        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid, imageName, imageName+".jpeg");
+        if(!fs.existsSync(imagePath)){
+            throw new NotFoundException('Image not found');
+        }
+        return imagePath
+    }
+
+
     async verifyApiKey(){
-        
+        //TODO: implements later    
     }
 
 
