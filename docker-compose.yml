@@ -1,7 +1,25 @@
 version:  '3.8'
 services:
+  nestjs-app:
+    container_name: nestjs-app
+    
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "3030:3030"
+    volumes:
+      - .:/usr/src/app
+      # - ./temp:/usr/src/app/temp
+    depends_on:
+      - dev-db
+    networks:
+      - lanestel
+
   dev-db:
     image: mongo:latest
+    container_name: dev-db
     ports:
       - 27017:27017
     environment:
@@ -15,6 +33,18 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  # watchtower:
+  #   image: containrrr/watchtower:latest
+  #   container_name: watchtower
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   environment:
+  #     WATCHTOWER_CLEANUP: true
+  #   command: --interval 30 nestjs-app
+  #   restart: always
+  #   networks:
+  #     - lanestel
+      
 volumes:
   mongo-data: {}
 

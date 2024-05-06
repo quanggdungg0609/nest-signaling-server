@@ -56,6 +56,7 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   async handleConnection(client: any, ...args:any[]){
     this.logger.log(`${client._socket.address().address} - has connected`)
     console.log(args)
+    // 
     // get kHeaders Symbol 
     // if (!await this.verifyApiKeyOrJwt(args)){
     //   client.send(JSON.stringify({

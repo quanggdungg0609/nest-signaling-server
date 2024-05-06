@@ -7,6 +7,7 @@ import { ConfigModule } from "@nestjs/config"
 import { User, UserSchema } from './modules/user/entities/user.entity';
 import { RefreshToken, RefreshTokenSchema } from './modules/user/modules/auth/entities/tokens.entity';
 import { Camera, CameraSchema } from './modules/camera/schemas/camera.schema';
+import { AdminModule } from './modules/admin/admin.module';
 
 
 
@@ -15,13 +16,14 @@ import { Camera, CameraSchema } from './modules/camera/schemas/camera.schema';
 
 @Module({
   imports: [
+    // 
     // * config module for .env file
     ConfigModule.forRoot({
       envFilePath: ".env",
       isGlobal: true,
     }),
     // * import mongoose module
-    MongooseModule.forRoot("mongodb://root:lanestel29@localhost:27017/"),
+    MongooseModule.forRoot("mongodb://root:lanestel29@dev-db:27017/"),
     MongooseModule.forFeature([
       {name: User.name, schema: UserSchema}, 
       {name: RefreshToken.name, schema: RefreshTokenSchema},
@@ -29,7 +31,7 @@ import { Camera, CameraSchema } from './modules/camera/schemas/camera.schema';
     ]),
     // * Orther modules
     UserModule, 
-    CameraModule
+    CameraModule, AdminModule
   ],
   controllers: [],
   providers: [

@@ -4,6 +4,7 @@ import { generateApiKey } from 'generate-api-key';
 import * as argon from "argon2";
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as ffmpeg from "fluent-ffmpeg";
 
 import { CameraRegDto } from '../DTO';
 import { InjectModel } from '@nestjs/mongoose';
@@ -82,12 +83,12 @@ export class CameraService {
 
     async uploadVideo(cameraUuid: string, file?: Express.Multer.File){
         try{
-            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid);
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid, file.originalname.split(".")[0]);
             await fs.ensureDir(uploadPath);
             // Verify if file existed
             const filePath = path.join(uploadPath, file.originalname);
             const fileExists = await fs.pathExists(filePath);
-
+            console.log(filePath)
             if (fileExists) {
                 // If file existed, overwrite
                 // await fs.copyFile(file.path, filePath, { overwrite: true });
@@ -97,6 +98,18 @@ export class CameraService {
                 // Else, move the file into the directory
                 await fs.move(file.path, filePath);
             }
+            this.logger.log(`video ${file.originalname} uploaded`)
+
+            ffmpeg()
+                .input(filePath)
+                .screenshots({ 
+                    timestamps: [2.0],
+                    filename: `${file.originalname.split(".")[0]}.jpg`,
+                    folder: uploadPath,
+                },)
+                .on("end",()=>{
+                    this.logger.log("Get thumnail from video done")
+                })
             return { message: 'File uploaded successfully' };
 
         }catch(error){
