@@ -7,7 +7,8 @@ import { CameraService } from '../services/camera.service';
 import { CameraModifyDto } from '../DTO/camera_modify.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CameraGuard } from '../guards/camera.guard';
-import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { GetVideoNamesDto } from '../DTO/get_videos_name.dto';
 
 //TODO: add api key auth in the future
 @ApiTags('Camera APIs')
@@ -187,6 +188,13 @@ export class CameraController {
 
     
 
+    @Get("get-video-names/:camaraUuid")
+    @HttpCode(200)
+    @ApiOperation({summary: "Get list of camera with pagination"})
+    async getVideoNames(@Param() dto:GetVideoNamesDto){
+
+    }
+
     @Get("get-thumbnail/:cameraUuid")
     @HttpCode(200)
     @ApiOperation({ summary: 'Get camera thumbnail with the camera uuid given'})
@@ -198,7 +206,7 @@ export class CameraController {
         status:404,
         description: "Thumbnail not found"
     })
-    async getThumbnail(@Param('camera-uuid') dto: GetThumbnailImageDto, @Res() res: Response){
+    async getThumbnail(@Param('camaraUuid') dto: GetThumbnailImageDto, @Res() res: Response){
         try{
             const imgPath = await this.cameraService.getThumbnail(dto.cameraUuid)
             res.sendFile(imgPath)

@@ -54,23 +54,26 @@ export class CameraService {
         }
     }
 
-    async uploadThumbnail(dto: UploadThumbnailDto){
+    async uploadThumbnail(file: Express.Multer.File){
         try{
             const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail');
             await fs.ensureDir(uploadPath);
             // Verify if file existed
-            const filePath = path.join(uploadPath, dto.file.originalname);
+            const filePath = path.join(uploadPath, file.originalname);
             const fileExists = await fs.pathExists(filePath);
             if (fileExists) {
                 // If file existed, overwrite
                 // await fs.copyFile(file.path, filePath, { overwrite: true });
                 await fs.remove(filePath); // Delete old file
-                await fs.move(dto.file.path, filePath);
+                await fs.move(file.path, filePath);
             } else {
                 // Else, move the file into the directory
-                await fs.move(dto.file.path, filePath);
+                await fs.move(file.path, filePath);
             }
-            this.logger.log(`Thumbnail image ${dto.file.originalname} uploaded`)
+            this.logger.log(`Thumbnail image ${file.originalname} uploaded`)
+            // remove temp file
+            await fs.remove(file.path)
+
             return { message: 'File uploaded successfully' };
         }catch(exception){
             console.log(exception)
@@ -97,6 +100,10 @@ export class CameraService {
             }
 
             this.logger.log(`Image ${file.originalname} uploaded`)
+            
+            // remove temp file
+            await fs.remove(file.path)
+
             return { message: 'File uploaded successfully' };
         } catch (error) {
             console.log(error);
@@ -107,6 +114,7 @@ export class CameraService {
     // use for upload video
     async uploadVideo(cameraUuid: string, file: Express.Multer.File){
         try{
+            console.log(file.path)
             const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid, file.originalname.split(".")[0]);
             await fs.ensureDir(uploadPath);
             // Verify if file existed
@@ -133,10 +141,12 @@ export class CameraService {
                 .on("end",()=>{
                     this.logger.log("Get thumbnail from video done")
                 })
+
+            await fs.remove(file.path)
             return { message: 'File uploaded successfully' };
 
         }catch(error){
-            console.log(error);
+            this.logger.error(error);
             return { error: 'Error uploading file' };
         }
     }
