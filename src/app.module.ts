@@ -8,6 +8,7 @@ import { User, UserSchema } from './modules/user/entities/user.entity';
 import { RefreshToken, RefreshTokenSchema } from './modules/user/modules/auth/entities/tokens.entity';
 import { Camera, CameraSchema } from './modules/camera/schemas/camera.schema';
 import { AdminModule } from './modules/admin/admin.module';
+import { FilesModule } from './modules/files/files.module';
 
 
 
@@ -27,7 +28,7 @@ import { AdminModule } from './modules/admin/admin.module';
     MongooseModule.forRootAsync({
       imports:[ConfigModule],
       useFactory: async (configService: ConfigService)=>({
-        uri:configService.get<string>("MONGO_URI")
+        uri:`mongodb://${configService.get<string>("MONGO_ACCOUNT")}:${configService.get<string>("MONGO_PASSWORD")}@${configService.get<string>("MONGO_URI")}`
       }),
       inject:[ConfigService]
     }),
@@ -38,7 +39,9 @@ import { AdminModule } from './modules/admin/admin.module';
     ]),
     // * Orther modules
     UserModule, 
-    CameraModule, AdminModule
+    CameraModule,
+    AdminModule, 
+    FilesModule
   ],
   controllers: [],
   providers: [

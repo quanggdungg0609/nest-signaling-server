@@ -56,7 +56,7 @@ export class CameraService {
 
     async uploadThumbnail(file: Express.Multer.File){
         try{
-            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail');
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', file.originalname.split(".")[0], 'thumbnail');
             await fs.ensureDir(uploadPath);
             // Verify if file existed
             const filePath = path.join(uploadPath, file.originalname);
@@ -83,7 +83,7 @@ export class CameraService {
 
     async uploadImage(file: Express.Multer.File, cameraUuid: string){
         try {
-            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', 'images', cameraUuid);
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', cameraUuid, 'images', );
             await fs.ensureDir(uploadPath);
             // Verify if file existed
             const filePath = path.join(uploadPath, file.originalname);
@@ -114,12 +114,12 @@ export class CameraService {
     // use for upload video
     async uploadVideo(cameraUuid: string, file: Express.Multer.File){
         try{
-            console.log(file.path)
-            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid, file.originalname.split(".")[0]);
+            const uploadPath = path.join(__dirname, '..', '..', '..', 'cameras', cameraUuid,"video", file.originalname.split(".")[0]);
             await fs.ensureDir(uploadPath);
-            // Verify if file existed
-            //
             const filePath = path.join(uploadPath, file.originalname);
+            
+            const mp4Path = path.join(uploadPath, `${file.originalname.split(".")[0]}.mp4`);
+            this.convertToMp4(filePath,mp4Path)
             const fileExists = await fs.pathExists(filePath);
             if (fileExists) {
                 // If file existed, overwrite
@@ -130,7 +130,7 @@ export class CameraService {
                 // Else, move the file into the directory
                 await fs.move(file.path, filePath);
             }
-            this.logger.log(`video ${file.originalname} uploaded`)
+            this.logger.log(`Video ${file.originalname.split(".")[0]} uploaded`)
             ffmpeg()
                 .input(filePath)
                 .screenshots({ 
@@ -143,6 +143,7 @@ export class CameraService {
                 })
 
             await fs.remove(file.path)
+            await fs.remove(filePath)
             return { message: 'File uploaded successfully' };
 
         }catch(error){
@@ -151,28 +152,32 @@ export class CameraService {
         }
     }
 
-    async getThumbnail(imageName: string){
-        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', 'thumbnail', imageName+".jpeg")
-        if (!fs.existsSync(imagePath)) {
-            throw new NotFoundException('Image not found');
-        }
-        return imagePath
-    }
+   
 
 
-    async getThumbnailVideo(cameraUuid:string, imageName:string){
-        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', "video", cameraUuid, imageName, imageName+".jpeg");
-        if(!fs.existsSync(imagePath)){
-            throw new NotFoundException('Image not found');
-        }
-        return imagePath
-    }
+    
 
 
     async verifyApiKey(){
         //TODO: implements later    
     }
 
+
+    private convertToMp4(videoPath: string, savePath: string){
+        ffmpeg(videoPath, {timeout:432000}).addOptions([
+            // "-c:v libvpx",
+            "-c:v libx264",
+            "-b:v 1M",
+            "-level 3.0",
+            "-f mp4"
+        ]).output(savePath).on("end",()=>{
+            this.logger.log("Video converted to HLS")
+        }).
+        on("error",(error)=>{
+            console.log(error)
+        })
+        .run()
+    }
 
     private createApiKey(): string{
         const apiKey = generateApiKey({method: "string", min: 8, max: 20}).toString();

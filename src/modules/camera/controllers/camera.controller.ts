@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Logger, NotFoundException, Param, ParseFilePipeBuilder,
-        Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+        Post, Put, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import {Response} from "express"
 
-import { CameraRegDto, GetThumbnailImageDto, GetThumbnailVideoDto } from '../DTO';
+import { CameraRegDto } from '../DTO';
 import { CameraService } from '../services/camera.service';
 import { CameraModifyDto } from '../DTO/camera_modify.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CameraGuard } from '../guards/camera.guard';
 import { ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetVideoNamesDto } from '../DTO/get_videos_name.dto';
+import { GetVideoNamesDto } from '../../files/DTOs/get_video_names.dto';
 
 //TODO: add api key auth in the future
 @ApiTags('Camera APIs')
@@ -186,62 +186,4 @@ export class CameraController {
         return this.cameraService.uploadVideo(cameraUuid, file)
     }
 
-    
-
-    @Get("get-video-names/:camaraUuid")
-    @HttpCode(200)
-    @ApiOperation({summary: "Get list of camera with pagination"})
-    async getVideoNames(@Param() dto:GetVideoNamesDto){
-
-    }
-
-    @Get("get-thumbnail/:cameraUuid")
-    @HttpCode(200)
-    @ApiOperation({ summary: 'Get camera thumbnail with the camera uuid given'})
-    @ApiResponse({
-        status: 200,
-        description: "Get thumbnail successful" 
-    })
-    @ApiResponse({
-        status:404,
-        description: "Thumbnail not found"
-    })
-    async getThumbnail(@Param('camaraUuid') dto: GetThumbnailImageDto, @Res() res: Response){
-        try{
-            const imgPath = await this.cameraService.getThumbnail(dto.cameraUuid)
-            res.sendFile(imgPath)
-            return
-        }catch(error){
-            if(error instanceof NotFoundException){
-                throw new NotFoundException(error.message)
-            }
-            throw error
-        }
-        
-    }
-
-    @Get("get-thumbnail-video/:cameraUuid/:imageName")
-    @HttpCode(200)
-    @ApiOperation({ summary: 'Get video thumbnail with the camera uuid given'})
-    @ApiResponse({
-        status: 200,
-        description: "Get video thumbnail successful" 
-    })
-    @ApiResponse({
-        status:404,
-        description: "Video thumbnail not found"
-    })
-    async getThumbnailVideo(@Param() getThumbnailDto: GetThumbnailVideoDto ,@Res() res: Response){
-        const {cameraUuid, imageName} = getThumbnailDto;
-        try{
-            const imgPath = await this.cameraService.getThumbnailVideo(cameraUuid, imageName)
-            res.sendFile(imgPath)
-            return
-        }catch(error){
-            if(error instanceof NotFoundException){
-                throw new NotFoundException(error.message)
-            }
-            throw error
-        }
-    }
 }

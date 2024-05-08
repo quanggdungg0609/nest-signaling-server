@@ -32,32 +32,21 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  minio:
-    container_name: minio
-    image: quay.io/minio/minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: lanestel29
-    volumes:
-      - ~/minio/data:/data
-    command: server /data --console-address ":9001"
-    networks:
-      - lanestel
-
-  # watchtower:
-  #   image: containrrr/watchtower:latest
-  #   container_name: watchtower
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
+  # minio:
+  #   container_name: minio
+  #   image: quay.io/minio/minio
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001"
   #   environment:
-  #     WATCHTOWER_CLEANUP: true
-  #   command: --interval 30 nestjs-app
-  #   restart: always
+  #     MINIO_ROOT_USER: admin
+  #     MINIO_ROOT_PASSWORD: lanestel29
+  #   volumes:
+  #     - ~/minio/data:/data
+  #   command: server /data --console-address ":9001"
   #   networks:
   #     - lanestel
+
       
 volumes:
   mongo-data: {}

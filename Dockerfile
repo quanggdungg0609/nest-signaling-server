@@ -6,6 +6,8 @@ COPY package*.json ./
 COPY . .
 RUN rm -rf node_modules
 RUN apt-get update
+RUN apt-get install libvpx-dev -y
+RUN apt-get install  libx264-dev -y
 RUN apt-get install ffmpeg -y
 RUN apt-get install  procps -y
 
