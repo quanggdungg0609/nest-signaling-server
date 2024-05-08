@@ -1,6 +1,13 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer } from '@nestjs/websockets';
+import { Model } from 'mongoose';
+import { User } from 'src/modules/user/entities/user.entity';
+import { RefreshToken } from 'src/modules/user/modules/auth/entities/tokens.entity';
 import { WebSocketServer as Server, WebSocket } from "ws";
+import * as argon from "argon2";
+import { Camera } from 'src/modules/camera/schemas/camera.schema';
+import { ConfigService } from '@nestjs/config';
 
 
 // TODO: implements this gateway later
@@ -25,11 +32,20 @@ interface Data{
 
 
 
-@WebSocketGateway(3030)
+@WebSocketGateway(3030,{cors:{
+  origin:"*"
+}})
 export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(WebSocketGateway.name)
   private cameras: Map<WebSocket, CameraInfo> = new Map<WebSocket, CameraInfo>
   private users: Map<WebSocket, UserInfo> = new Map<WebSocket, UserInfo>
+
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(RefreshToken.name) private tokenModel: Model<RefreshToken>,
+    @InjectModel(Camera.name) private cameraModel: Model<Camera>,
+    private readonly config: ConfigService
+  ){}
 
   @WebSocketServer() server: Server;
 
@@ -37,8 +53,18 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     this.logger.log("Initialized Websocket Server");
   }
 
-  handleConnection(client: any, ...args:any[]){
+  async handleConnection(client: any, ...args:any[]){
     this.logger.log(`${client._socket.address().address} - has connected`)
+    console.log(args)
+    // 
+    // get kHeaders Symbol 
+    // if (!await this.verifyApiKeyOrJwt(args)){
+    //   client.send(JSON.stringify({
+    //     event:"Error",
+    //     data:"Unauthorized"
+    //   }))
+    //   client.terminate()
+    // }
     // this.server.clients.forEach(client => {
     //   client.send(JSON.stringify({"event":"hello", "payload":"hello"}))
     // })
@@ -48,7 +74,7 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     // find if the user disconnect
     let userUuid: string | undefined
     let cameraUuid : string | undefined
-
+    
     this.users.forEach((user:UserInfo, key:WebSocket)=>{
       if (key === client){
         userUuid = user.uuid
@@ -91,7 +117,6 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       this.logger.log("Undefined client disconnect")
     }else if (userUuid !== undefined || cameraUuid !== undefined){
       this.logger.log(`${userUuid? "User [" + userUuid +"]" : "Camera [" + cameraUuid+"]"} - has disconnected`)
-      console.log(userUuid ? this.users: this.cameras)
     }
   }
 
@@ -174,7 +199,6 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
         type: data.type,
         sdp: data.sdp
       }
-      console.log(payload.from)
       cameraSocket.send(JSON.stringify({
         event:"offer-sd",
         data:payload
@@ -257,4 +281,31 @@ export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     }
     return undefined
   }
+
+  // private async verifyApiKeyOrJwt(args: any[]):Promise<Boolean>{
+  //   /*
+  //   * get Api Key or JWT in headers and verify
+  //   */
+
+  //   const kHeadersSymbol = Object.getOwnPropertySymbols(args[0]).find(symbol=>symbol.toString()==="Symbol(kHeaders)")
+
+  //   // If a camera, api-key exists
+  //   if(args[0][kHeadersSymbol]["api-key"]){
+  //     console.log(args[0][kHeadersSymbol]["api-key"])
+  //     const salt = this.config.get<string>("SALT_APIKEY")
+  //     const hashApiKey = await argon.hash(args[0][kHeadersSymbol]["api-key"],{
+  //       salt: Buffer.from(salt, "utf-8")
+  //     })
+  //     const camera = await this.cameraModel.findOne({apiKey:hashApiKey})
+  //     if(camera){
+  //       return true
+  //     }
+  //   }
+
+  //   // If users, jwt bearer exists
+  //   if(args[0][kHeadersSymbol]["authorization"]){
+  //     //TODO: implement this features soon
+  //   }
+  //   return true
+  // }
 }

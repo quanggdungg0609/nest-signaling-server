@@ -1,7 +1,24 @@
 version:  '3.8'
 services:
+  nestjs-app:
+    container_name: nestjs-app
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "3030:3030"
+    volumes:
+      - ./src:/usr/src/app/src
+      # - ./temp:/usr/src/app/temp
+    depends_on:
+      - dev-db
+    networks:
+      - lanestel
+
   dev-db:
     image: mongo:latest
+    container_name: dev-db
     ports:
       - 27017:27017
     environment:
@@ -15,6 +32,22 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  # minio:
+  #   container_name: minio
+  #   image: quay.io/minio/minio
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001"
+  #   environment:
+  #     MINIO_ROOT_USER: admin
+  #     MINIO_ROOT_PASSWORD: lanestel29
+  #   volumes:
+  #     - ~/minio/data:/data
+  #   command: server /data --console-address ":9001"
+  #   networks:
+  #     - lanestel
+
+      
 volumes:
   mongo-data: {}
 
