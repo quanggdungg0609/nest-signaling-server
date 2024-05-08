@@ -13,7 +13,9 @@ export class FilesService {
     private readonly logger = new Logger(FilesService.name);
 
 
-    async getVideoNames(cameraUuid: string): Promise<string[]>{
+    async getVideoNames(cameraUuid: string, page: number = 1, limit: number = 10): Promise<{
+        videoNames: string[], currentPage:number, nextPage: number, previousPage: number| null, totalPages:number
+    }>{
         try{
             console.log(cameraUuid)
             const cameraPath = path.join(__dirname, "..", "..", "..", "cameras", cameraUuid, "video")
@@ -29,7 +31,26 @@ export class FilesService {
                 .filter(entry => entry.isDirectory())
                 .map(entry => entry.name);
             
-            return directoryNames
+            // pagination
+            const totalPages = directoryNames.length;
+            
+
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+            const paginatedNames = directoryNames.slice(startIndex, endIndex);
+
+            const currentPage = page;
+            const nextPage = currentPage * limit < directoryNames.length ? currentPage + 1 : null;
+            const previousPage = currentPage > 1 ? currentPage - 1 : null;
+
+            return {
+                videoNames: paginatedNames,
+                currentPage: currentPage,
+                nextPage: nextPage,
+                previousPage: previousPage,
+                totalPages: totalPages
+                
+            }
         }catch(exception){
             this.logger.error(exception)
             if (exception instanceof NotFoundException){

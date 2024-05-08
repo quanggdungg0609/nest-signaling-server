@@ -118,8 +118,6 @@ export class CameraService {
             await fs.ensureDir(uploadPath);
             const filePath = path.join(uploadPath, file.originalname);
             
-            const mp4Path = path.join(uploadPath, `${file.originalname.split(".")[0]}.mp4`);
-            this.convertToMp4(filePath,mp4Path)
             const fileExists = await fs.pathExists(filePath);
             if (fileExists) {
                 // If file existed, overwrite
@@ -128,8 +126,11 @@ export class CameraService {
                 await fs.move(file.path, filePath);
             } else {
                 // Else, move the file into the directory
+                
                 await fs.move(file.path, filePath);
             }
+            const mp4Path = path.join(uploadPath, `${file.originalname.split(".")[0]}.mp4`);
+            this.convertToMp4(filePath,mp4Path)
             this.logger.log(`Video ${file.originalname.split(".")[0]} uploaded`)
             ffmpeg()
                 .input(filePath)
@@ -138,12 +139,16 @@ export class CameraService {
                     filename: `${file.originalname.split(".")[0]}.jpg`,
                     folder: uploadPath,
                 },)
-                .on("end",()=>{
+                .on("end",async ()=>{
                     this.logger.log("Get thumbnail from video done")
+                    this.logger.log("Clean temporary file")
+                    await fs.remove(file.path)
+                    await fs.remove(filePath)
                 })
-
-            await fs.remove(file.path)
-            await fs.remove(filePath)
+                .on("error",(error)=>{
+                    this.logger.log("error here")
+                })
+            
             return { message: 'File uploaded successfully' };
 
         }catch(error){
@@ -152,7 +157,7 @@ export class CameraService {
         }
     }
 
-   
+
 
 
     
