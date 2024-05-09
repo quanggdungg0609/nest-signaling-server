@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Logger, NotFoundException, Param, ParseFilePipeBuilder,
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, InternalServerErrorException, Logger, NotFoundException, Param, ParseFilePipeBuilder,
         Post, Put, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import {Response} from "express"
 
@@ -44,14 +44,14 @@ export class CameraController {
         description:"Necessary camera information"
     })
     register(@Body() dto: CameraRegDto){
-        console.log(dto)
-        return this.cameraService.register(dto);
+        try{
+            return this.cameraService.register(dto);
+        }catch(exception){
+            throw exception
+        }
     }
 
-    @Get("verify-apikey")
-    async verifyApiKey(){
-        
-    }
+    
 
     @Put("modifyInfo")
     @UseGuards(CameraGuard)

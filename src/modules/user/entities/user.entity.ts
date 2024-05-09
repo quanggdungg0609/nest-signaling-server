@@ -2,7 +2,7 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
 import * as mongoose from 'mongoose';
 import { Camera } from "../../camera/schemas/camera.schema";
-import { RefreshToken } from "../modules/auth/entities/tokens.entity";
+import { RefreshToken } from "../../auth/entities/tokens.entity";
 
 
 export type UserDocument = HydratedDocument<User>;

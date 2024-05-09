@@ -5,10 +5,11 @@ import { CameraModule } from './modules/camera/camera.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { User, UserSchema } from './modules/user/entities/user.entity';
-import { RefreshToken, RefreshTokenSchema } from './modules/user/modules/auth/entities/tokens.entity';
+import { RefreshToken, RefreshTokenSchema } from './modules/auth/entities/tokens.entity';
 import { Camera, CameraSchema } from './modules/camera/schemas/camera.schema';
 import { AdminModule } from './modules/admin/admin.module';
 import { FilesModule } from './modules/files/files.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 
 
@@ -38,7 +39,8 @@ import { FilesModule } from './modules/files/files.module';
       {name: Camera.name, schema: CameraSchema}
     ]),
     // * Orther modules
-    UserModule, 
+    UserModule,
+    AuthModule,
     CameraModule,
     AdminModule, 
     FilesModule

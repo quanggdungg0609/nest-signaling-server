@@ -29,6 +29,7 @@ export class FilesController {
     ){
         try{
             const result=await this.filesService.getVideoNames(dto.cameraUuid, page, limit)
+            
             return result
         }catch(exception){
             throw exception

@@ -1,6 +1,6 @@
-import { Body, Controller, Logger, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Header, HttpCode, HttpStatus, Logger, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { SignInDto, SignUpDto, RefreshDto } from '../DTO';
+import { SignInDto, SignUpDto, RefreshDto, VerifyApiKeyDto } from '../DTO';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from "express"
 import { JwtRefreshGuard } from '../guards/jwt_refresh/jwt_refresh.guard';
@@ -19,6 +19,7 @@ export class AuthController {
         @Body() dto: SignUpDto
     ) {
         const userAgent = this.getUserAgent(request);
+        this.logger
         return this.authService.signUp(dto, userAgent);
     }
 
@@ -46,7 +47,7 @@ export class AuthController {
         return this.authService.refresh(dto, payload);
     }   
 
-    @Post()
+    @Post("logout")
     logout(
         @Req() request: Request
     ){
@@ -54,6 +55,24 @@ export class AuthController {
         return this.authService.logout()
     }
 
+
+    @Post("verify-api-key")
+    @HttpCode(HttpStatus.OK)
+    
+    async verifyApiKey(
+        @Body() dto: VerifyApiKeyDto
+    ){
+        try{
+            if(await this.authService.verifyApiKey(dto.apiKey)){
+                return {message: "API Key authorized"}
+            }else{
+                throw new ForbiddenException("API Key unauthorized")
+            }
+        }catch(exception){
+            this.logger.error(exception)
+            throw exception
+        }
+    }
 
     private getUserAgent(request: Request): string{
         const uaString = request.headers["user-agent"];

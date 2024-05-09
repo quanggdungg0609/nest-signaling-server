@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer } from '@nestjs/websockets';
 import { Model } from 'mongoose';
 import { User } from 'src/modules/user/entities/user.entity';
-import { RefreshToken } from 'src/modules/user/modules/auth/entities/tokens.entity';
+import { RefreshToken } from 'src/modules/auth/entities/tokens.entity';
 import { WebSocketServer as Server, WebSocket } from "ws";
 import * as argon from "argon2";
 import { Camera } from 'src/modules/camera/schemas/camera.schema';

@@ -49,7 +49,7 @@ export class CameraService {
             this.logger.log("New Camera added")
             return { apiKey: apiKey };
         }catch (exception){
-            this.logger.error(exception, exception.stack)
+            this.logger.error(exception)
             throw exception instanceof HttpException ? exception : new InternalServerErrorException();
         }
     }
