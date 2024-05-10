@@ -1,8 +1,8 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from "express"; 
-import { JwtAccessGuard } from '../modules/auth/guards/jwt_access/jwt_access.guard';
-import { JwtRefreshGuard } from '../modules/auth/guards/jwt_refresh/jwt_refresh.guard';
+import { JwtAccessGuard } from '../../auth/guards/jwt_access/jwt_access.guard';
+import { JwtRefreshGuard } from '../../auth/guards/jwt_refresh/jwt_refresh.guard';
 
 
 

@@ -1,5 +1,5 @@
-import { Controller, Get, Header, HttpCode, Logger, NotFoundException, Param, Res,Headers, HttpStatus, InternalServerErrorException } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Header, HttpCode, Logger, NotFoundException, Param, Res,Headers, HttpStatus, InternalServerErrorException, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {Response} from "express"
 import { createReadStream, statSync } from 'fs';
 
@@ -20,10 +20,17 @@ export class FilesController {
     @HttpCode(200)
     @ApiOperation({summary: "Get list of video with pagination"})
     @ApiParam({ name: 'camaraUuid', description: 'UUID of the camera', type: 'string', example: "b22f742e-50e4-4fc0-8cc5-1ff86f7b8881" })
-    async getVideoNames(@Param() dto: GetVideoNamesDto){
+    @ApiQuery({name:"page", description: "Number of page(Default: 1)", example:"2" })
+    @ApiQuery({name:"limit", description: "Number of result return(Default:10)", example:"1"})
+    async getVideoNames(
+        @Param() dto: GetVideoNamesDto,
+        @Query('limit', new DefaultValuePipe(1), ParseIntPipe) limit: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page:number
+    ){
         try{
-            const videoNames=await this.filesService.getVideoNames(dto.cameraUuid)
-            return {videoNames: videoNames}
+            const result=await this.filesService.getVideoNames(dto.cameraUuid, page, limit)
+            
+            return result
         }catch(exception){
             throw exception
         }

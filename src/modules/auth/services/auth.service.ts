@@ -1,7 +1,7 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as argon from "argon2";
-import mongoose, { Model } from 'mongoose';
+import  { Model } from 'mongoose';
 
 import { User } from 'src/modules/user/entities/user.entity';
 import { SignUpDto, SignInDto, RefreshDto } from '../DTO';
@@ -9,6 +9,7 @@ import { MongoServerError } from 'mongodb';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RefreshToken } from '../entities/tokens.entity';
+import { Camera } from 'src/modules/camera/schemas/camera.schema';
 
 @Injectable({})
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
         @InjectModel(RefreshToken.name) private tokenModel: Model<RefreshToken>,
+        @InjectModel(Camera.name) private cameraModel: Model<Camera>,
         private jwt: JwtService,
         private config: ConfigService,
     ){}
@@ -111,6 +113,8 @@ export class AuthService {
                         throw new HttpException("Username or Email exsited", HttpStatus.BAD_REQUEST);
                     default:
                 }
+            }else{
+                throw new InternalServerErrorException()
             }
         }
     }
@@ -142,7 +146,7 @@ export class AuthService {
             }
             
         }catch(exception){
-            this.logger.error("Error", exception.stack);
+            this.logger.error(exception);
 
             if (exception instanceof TokenExpiredError){
                 throw new HttpException("Token is expired", HttpStatus.BAD_REQUEST)
@@ -156,7 +160,22 @@ export class AuthService {
 
     // ! Logout func
     async logout(){
-        
+        // TODO: implement later
+    }
+
+
+    // ! verify ApiKey
+    async verifyApiKey(apiKey: string): Promise<Boolean>{
+        try{
+            const hashApiKey = await this._hashApiKey(apiKey)
+            const camera = await this.cameraModel.findOne({apiKey: hashApiKey})
+            if(camera){
+                return true
+            }
+            return false
+        }catch(exception){
+            throw new InternalServerErrorException()
+        }
     }
 
     private async _signAccessToken(userId: string, role: string): Promise<{access_token: String}> {
@@ -200,5 +219,13 @@ export class AuthService {
                 salt: Buffer.from(this.config.get<string>("SALT_TOKEN"))
             }    
         );
+    }
+
+    private async _hashApiKey(apiKey:string):Promise<string>{
+        return await argon.hash(apiKey,
+            {
+                salt: Buffer.from(this.config.get<string>("SALT_APIKEY"))
+            }
+        )
     }
 }
