@@ -113,6 +113,8 @@ export class AuthService {
                         throw new HttpException("Username or Email exsited", HttpStatus.BAD_REQUEST);
                     default:
                 }
+            }else{
+                throw new InternalServerErrorException()
             }
         }
     }
@@ -144,7 +146,7 @@ export class AuthService {
             }
             
         }catch(exception){
-            this.logger.error("Error", exception.stack);
+            this.logger.error(exception);
 
             if (exception instanceof TokenExpiredError){
                 throw new HttpException("Token is expired", HttpStatus.BAD_REQUEST)
@@ -158,7 +160,7 @@ export class AuthService {
 
     // ! Logout func
     async logout(){
-        
+        // TODO: implement later
     }
 
 
