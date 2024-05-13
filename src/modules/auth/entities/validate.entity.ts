@@ -1,16 +1,15 @@
-import { IsNotEmpty } from "class-validator"
+import { IsNotEmpty } from "class-validator";
 
-
-export class ValidateDto{
+export class ValidateDto {
     @IsNotEmpty()
-    sub: string
-
-    @IsNotEmpty()
-    role: string
+    sub: string;
 
     @IsNotEmpty()
-    iat: number
+    role: string;
 
     @IsNotEmpty()
-    exp: number
+    iat: number;
+
+    @IsNotEmpty()
+    exp: number;
 }

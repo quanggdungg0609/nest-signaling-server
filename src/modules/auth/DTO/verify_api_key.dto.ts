@@ -1,13 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
 
-
-export class VerifyApiKeyDto{
+export class VerifyApiKeyDto {
     @ApiProperty({
-        name:"apiKey",
-        description: "A API Key of a camera"
+        name: "apiKey",
+        description: "A API Key of a camera",
     })
     @IsString()
     @IsNotEmpty()
-    apiKey:string
+    apiKey: string;
 }

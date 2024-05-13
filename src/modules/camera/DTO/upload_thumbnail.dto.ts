@@ -1,8 +1,3 @@
-
-
-
-
-
-export class UploadThumbnailDto{
-    file: Express.Multer.File
+export class UploadThumbnailDto {
+    file: Express.Multer.File;
 }
