@@ -1,4 +1,4 @@
-import { Logger, UseGuards } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import {
     SubscribeMessage,
@@ -12,7 +12,6 @@ import { Model } from "mongoose";
 import { User } from "src/modules/user/entities/user.entity";
 import { RefreshToken } from "src/modules/auth/entities/tokens.entity";
 import { WebSocketServer as Server, WebSocket } from "ws";
-import * as argon from "argon2";
 import { Camera } from "src/modules/camera/schemas/camera.schema";
 import { ConfigService } from "@nestjs/config";
 
@@ -28,12 +27,6 @@ interface CameraInfo {
     uuid: string;
     name: string;
     location: string;
-}
-
-interface Data {
-    event: string;
-    uuid: string;
-    payload: any;
 }
 
 @WebSocketGateway(3030, {
@@ -64,9 +57,10 @@ export class WebsocketGateway
         this.logger.log("Initialized Websocket Server");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async handleConnection(client: any, ...args: any[]) {
         this.logger.log(`${client._socket.address().address} - has connected`);
-        console.log(args);
+        // console.log(args);
         //
         // get kHeaders Symbol
         // if (!await this.verifyApiKeyOrJwt(args)){
@@ -139,7 +133,7 @@ export class WebsocketGateway
 
     @SubscribeMessage("user-connect")
     handleUserConnect(client: WebSocket, data: any) {
-        let newUser: UserInfo = {
+        const newUser: UserInfo = {
             uuid: data.uuid,
             username: data.username,
             role: data.role,
@@ -162,7 +156,7 @@ export class WebsocketGateway
 
     @SubscribeMessage("camera-connect")
     handleCameraConnect(client: WebSocket, data: any) {
-        let newCamera: CameraInfo = {
+        const newCamera: CameraInfo = {
             uuid: data.uuid,
             name: data.name,
             location: data.location,
@@ -184,9 +178,10 @@ export class WebsocketGateway
     }
 
     @SubscribeMessage("request-list-users")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handleRequestListUsers(client: WebSocket, data: any) {
         this.authCameraAndDoAction(client, () => {
-            let listUsers = Array.from(this.users.values()).map((user) => ({
+            const listUsers = Array.from(this.users.values()).map((user) => ({
                 uuid: user.uuid,
             }));
             client.send(
@@ -199,9 +194,10 @@ export class WebsocketGateway
     }
 
     @SubscribeMessage("request-list-cameras")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handleRequestListCameras(client: WebSocket, data: any) {
         this.authUserAndDoAction(client, () => {
-            let listCameras = Array.from(this.cameras.values()).map(
+            const listCameras = Array.from(this.cameras.values()).map(
                 (camera) => ({
                     uuid: camera.uuid,
                     name: camera.name,
@@ -274,6 +270,7 @@ export class WebsocketGateway
     }
 
     @SubscribeMessage("ice-candidate")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handleIceCandidate(client: WebSocket, data: { uuid: string; to: string }) {
         // TODO: Need to implement
     }

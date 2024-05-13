@@ -65,8 +65,12 @@ export class AuthController {
         description: "User not found",
     })
     @ApiResponse({
+        status: 400,
+        description: "Username/email is empty",
+    })
+    @ApiResponse({
         status: 401,
-        description: "Unauthorized",
+        description: "Password not valid",
     })
     @ApiResponse({
         status: 500,
