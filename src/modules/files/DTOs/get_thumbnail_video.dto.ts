@@ -1,14 +1,14 @@
-import { IsNotEmpty, IsString} from "class-validator"
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
-export class GetThumbnailVideoDto{
+export class GetThumbnailVideoDto {
     @ApiProperty()
     @IsNotEmpty()
     @IsString()
-    cameraUuid: string
+    cameraUuid: string;
 
     @ApiProperty()
     @IsNotEmpty()
     @IsString()
-    imageName: string
+    imageName: string;
 }

@@ -1,3 +1,1 @@
-
-
-export  * from "./validate.entity"
+export * from "./validate.entity";

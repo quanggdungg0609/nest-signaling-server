@@ -1,46 +1,73 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import * as path from 'path';
-import * as fs from 'fs-extra';
+import {
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+    NotFoundException,
+} from "@nestjs/common";
+import * as path from "path";
+import * as fs from "fs-extra";
 import * as ffmpeg from "fluent-ffmpeg";
-import * as ffmpegInstaller from "@ffmpeg-installer/ffmpeg"
+import * as ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 
-import { statSync, createReadStream } from 'fs';
+import { statSync, createReadStream } from "fs";
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path)
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 @Injectable()
 export class FilesService {
     private readonly logger = new Logger(FilesService.name);
 
+    async getVideoNames(
+        cameraUuid: string,
+        page: number = 1,
+        limit: number = 10,
+    ): Promise<{
+        videoNames: string[];
+        currentPage: number;
+        nextPage: number;
+        previousPage: number | null;
+        totalPages: number;
+    }> {
+        try {
+            console.log(cameraUuid);
+            const cameraPath = path.join(
+                __dirname,
+                "..",
+                "..",
+                "..",
+                "cameras",
+                cameraUuid,
+                "video",
+            );
+            const cameraExists = await fs.promises
+                .stat(cameraPath)
+                .then(() => true)
+                .catch(() => false);
 
-    async getVideoNames(cameraUuid: string, page: number = 1, limit: number = 10): Promise<{
-        videoNames: string[], currentPage:number, nextPage: number, previousPage: number| null, totalPages:number
-    }>{
-        try{
-            console.log(cameraUuid)
-            const cameraPath = path.join(__dirname, "..", "..", "..", "cameras", cameraUuid, "video")
-            const cameraExists = await fs.promises.stat(cameraPath).then(() => true).catch(() => false);
-
-            if(!cameraExists){
-                throw new NotFoundException("Camera not found")
+            if (!cameraExists) {
+                throw new NotFoundException("Camera not found");
             }
 
-            const entries = await fs.promises.readdir(cameraPath, { withFileTypes: true });
-            
+            const entries = await fs.promises.readdir(cameraPath, {
+                withFileTypes: true,
+            });
+
             const directoryNames = entries
-                .filter(entry => entry.isDirectory())
-                .map(entry => entry.name);
-            
+                .filter((entry) => entry.isDirectory())
+                .map((entry) => entry.name);
+
             // pagination
             const totalPages = directoryNames.length;
-            
 
             const startIndex = (page - 1) * limit;
             const endIndex = startIndex + limit;
             const paginatedNames = directoryNames.slice(startIndex, endIndex);
 
             const currentPage = page;
-            const nextPage = currentPage * limit < directoryNames.length ? currentPage + 1 : null;
+            const nextPage =
+                currentPage * limit < directoryNames.length
+                    ? currentPage + 1
+                    : null;
             const previousPage = currentPage > 1 ? currentPage - 1 : null;
 
             return {
@@ -48,41 +75,68 @@ export class FilesService {
                 currentPage: currentPage,
                 nextPage: nextPage,
                 previousPage: previousPage,
-                totalPages: totalPages
-                
+                totalPages: totalPages,
+            };
+        } catch (exception) {
+            this.logger.error(exception);
+            if (exception instanceof NotFoundException) {
+                throw exception;
             }
-        }catch(exception){
-            this.logger.error(exception)
-            if (exception instanceof NotFoundException){
-                throw exception
-            }
-            throw new InternalServerErrorException()
+            throw new InternalServerErrorException();
         }
     }
 
-    async getThumbnail(cameraUuid: string){
-
-        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', cameraUuid, 'thumbnail', cameraUuid+".jpeg")
+    async getThumbnail(cameraUuid: string) {
+        const imagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "..",
+            "cameras",
+            cameraUuid,
+            "thumbnail",
+            cameraUuid + ".jpeg",
+        );
         if (!fs.existsSync(imagePath)) {
-            throw new NotFoundException('Image not found');
+            throw new NotFoundException("Image not found");
         }
-        return imagePath
+        return imagePath;
     }
 
-    async getThumbnailVideo(cameraUuid:string, imageName:string){
-        const imagePath = path.join(__dirname, '..', '..', '..', 'cameras', cameraUuid, "video", imageName, imageName+".jpeg");
-        if(!fs.existsSync(imagePath)){
-            throw new NotFoundException('Image not found');
+    async getThumbnailVideo(cameraUuid: string, imageName: string) {
+        const imagePath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "..",
+            "cameras",
+            cameraUuid,
+            "video",
+            imageName,
+            imageName + ".jpeg",
+        );
+        if (!fs.existsSync(imagePath)) {
+            throw new NotFoundException("Image not found");
         }
-        return imagePath
+        return imagePath;
     }
 
-    getVideoPath(cameraUuid: string, videoName: string){
-        const videoPath = path.join(__dirname, '..', '..', '..', 'cameras', cameraUuid, "video", videoName, videoName+".mp4");
-        if(!fs.existsSync(videoPath)){
-            throw new NotFoundException('Video not found');
+    getVideoPath(cameraUuid: string, videoName: string) {
+        const videoPath = path.join(
+            __dirname,
+            "..",
+            "..",
+            "..",
+            "cameras",
+            cameraUuid,
+            "video",
+            videoName,
+            videoName + ".mp4",
+        );
+        if (!fs.existsSync(videoPath)) {
+            throw new NotFoundException("Video not found");
         }
-        return videoPath
+        return videoPath;
     }
 
     // async convertToHLS(cameraUuid: string, videoName: string){
